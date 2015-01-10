@@ -11,9 +11,31 @@
 
 var math = require('mathjs');
 var pi = 3.14159265358979324;
+
+// Mars Geodetic System ==> BD-09 Geodetic System
+
+exports.BDTransform = function bd09transform(wgLat, wgLon){
+    var MarsGS = JSON.parse(transform(wgLat, wgLon)); 
+
+    var x = MarsGS.Lon;
+    var y = MarsGS.Lat;
+    
+    var z = math.sqrt(x * x + y * y) + 0.00002 * math.sin(y * pi);
+    var theta = Math.atan2(y, x) + 0.000003 * math.cos(x * pi);
+    var bd_lon = z * math.cos(theta) + 0.0065;
+    var bd_lat = z * math.sin(theta) + 0.006;
+
+    return JSON.stringify({"Lat":bd_lat, "Lon":bd_lon}); 
+}
+
 // World Geodetic System ==> Mars Geodetic System
 
-exports.MarsTransform = function transform(wgLat, wgLon){
+exports.MarsTransform = function GCJTransform(wgLat, wgLon){
+   return transform(wgLat,wgLon);
+}
+
+
+function transform(wgLat, wgLon){
     //transform(latitude,longitude) , WGS84
     //return (latitude,longitude) , GCJ02
 
@@ -39,7 +61,7 @@ exports.MarsTransform = function transform(wgLat, wgLon){
     var mgLat = wgLat + dLat;
     var mgLon = wgLon + dLon;
 
-    return {Lat:mgLat, Lon:mgLon}; 
+    return JSON.stringify({"Lat":mgLat, "Lon":mgLon}); 
 }
 
 function outOfChina(lat, lon){
